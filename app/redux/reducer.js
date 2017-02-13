@@ -2,7 +2,6 @@ import { combineReducers } from 'redux';
 
 const MOVE_PADDLE = 'MOVE';
 const MOVE_BALL   = 'MOVE_BALL';
-const SCORE       = 'SCORE';
 const START_GAME  = 'START_GAME';
 const END_GAME    = 'END_GAME';
 
@@ -13,10 +12,13 @@ export const movePaddle = (player, direction, maxY) => ({
   maxY
 });
 
-export const moveBall = (maxX, maxY) => ({
+export const moveBall = (maxX, maxY, leftPaddle, rightPaddle, ballX) => ({
   type: MOVE_BALL,
   maxX,
-  maxY
+  maxY,
+  leftPaddle,
+  rightPaddle,
+  ballX
 });
 
 export const score = player => ({
@@ -40,9 +42,24 @@ function ballReducer (state = { x: 0, y: 0, dx: 4, dy: 4 }, action) {
 
     case MOVE_BALL:
       let { x, y, dx, dy } = state;
-      const { maxX, maxY } = action;
-      if (x < 0 || x > maxX - 20) dx *= -1;
-      if (y < 20 || y > maxY - 40) dy *= -1;
+      const { maxX, maxY, leftPaddle, rightPaddle } = action;
+
+      // hit by left paddle
+      if (x < 20 && y > leftPaddle && y < leftPaddle + 100)
+        dx *= -1;
+
+      // hit by right paddle
+      else if (x > maxX - 40 && y > rightPaddle && y < rightPaddle + 100)
+        dx *= -1;
+
+      // hit left or right wall
+      else if (x < 0 || x > maxX - 20)
+        dx *= -1;
+
+      // hit top or bottom wall
+      if (y < 20 || y > maxY - 40)
+        dy *= -1;
+
       return { dx, dy, x: x + dx, y: y + dy };
 
     default:
@@ -75,6 +92,16 @@ function playerReducer (state = { position: 0, score: 0 }, action) {
         });
       }
 
+    case MOVE_BALL:
+      if (action.ballX === 0 && action.player === 2)
+        return Object.assign({}, state, {
+          score: state.score + 1
+        });
+      else if (action.ballX >= action.maxX - 20 && action.player === 1)
+        return Object.assign({}, state, {
+          score: state.score + 1
+        });
+
     default:
       return state;
 
@@ -96,7 +123,6 @@ export default function reducer (state = initialState, action) {
       });
 
     case MOVE_PADDLE:
-    case SCORE:
       const playerNumber = action.player;
       const player = state.players[playerNumber];
       const players = Object.assign({}, state.players, {
@@ -106,7 +132,11 @@ export default function reducer (state = initialState, action) {
 
     case MOVE_BALL:
       return Object.assign({}, state, {
-        ball: ballReducer(state.ball, action)
+        ball: ballReducer(state.ball, action),
+        players: {
+          1: playerReducer(state.players[1], Object.assign({}, action, { player: 1 })),
+          2: playerReducer(state.players[2], Object.assign({}, action, { player: 2 }))
+        }
       });
 
     default:

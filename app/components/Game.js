@@ -3,12 +3,14 @@ import { connect } from 'react-redux';
 import Paddle from './Paddle';
 import Score from './Score';
 import Ball from './Ball';
+import store from '../redux/store';
 import { moveBall, movePaddle } from '../redux/reducer';
 
 class Game extends Component {
 
   componentDidMount () {
-    requestAnimationFrame(this.props.loop)
+    this.props.loop();
+
     window.addEventListener('keydown', evt => {
       const key = evt.key;
       if (key === 'a') this.props.movePaddle(1, 'down');
@@ -38,7 +40,16 @@ const mapStateToProps = null;
 const mapDispatchToProps = (dispatch) => {
 
   const step = () => {
-    dispatch(moveBall(window.innerWidth, window.innerHeight))
+    const leftPaddle = store.getState().players[1].position;
+    const rightPaddle = store.getState().players[2].position;
+    const ballX = store.getState().ball.x;
+    dispatch(moveBall(
+      window.innerWidth,
+      window.innerHeight,
+      leftPaddle,
+      rightPaddle,
+      ballX
+    ));
     requestAnimationFrame(step);
   };
 
