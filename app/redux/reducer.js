@@ -53,7 +53,7 @@ function ballReducer (state = { x: 0, y: 0, dx: 4, dy: 4 }, action) {
         dx *= -1;
 
       // hit left or right wall
-      else if (x < 0 || x > maxX - 20)
+      else if (x <= 0 || x >= maxX - 20)
         dx *= -1;
 
       // hit top or bottom wall

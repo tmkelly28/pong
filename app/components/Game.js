@@ -10,13 +10,20 @@ class Game extends Component {
 
   componentDidMount () {
     this.props.loop();
+    this.keys = {};
 
     window.addEventListener('keydown', evt => {
       const key = evt.key;
-      if (key === 'a') this.props.movePaddle(1, 'down');
-      else if (key === 'q') this.props.movePaddle(1, 'up');
-      else if (key === 'l') this.props.movePaddle(2, 'down');
-      else if (key === 'p') this.props.movePaddle(2, 'up');
+      this.keys[key] = true;
+      if (this.keys['a']) setTimeout(this.props.movePaddle(1, 'down'))
+      if (this.keys['q']) setTimeout(this.props.movePaddle(1, 'up'))
+      if (this.keys['l']) setTimeout(this.props.movePaddle(2, 'down'))
+      if (this.keys['p']) setTimeout(this.props.movePaddle(2, 'up'))
+    });
+
+    window.addEventListener('keyup', evt => {
+      const key = evt.key;
+      this.keys[key] = false;
     });
   }
 
